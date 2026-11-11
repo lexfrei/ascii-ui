@@ -99,6 +99,20 @@ The host owns the current `name`, validation and normalization. External values 
 
 Escape handling remains application-owned. Asynchronous forms and editors requiring explicit Save/Cancel should retain their own drafts and ordinary `TextField` bindings instead of using this commit-on-removal control.
 
+## Scroll viewport size on macOS
+
+Place `ScrollViewportReader` in the background of scroll content to receive the nearest enclosing scroll view's usable clip size. The host owns the `viewportSize` state:
+
+```swift
+content.background {
+    ScrollViewportReader { viewportSize = $0 }
+}
+```
+
+Reports arrive asynchronously on the main thread. Queued size changes are coalesced, scroll-origin changes do not produce reports, and detachment invalidates pending callbacks. The reader does not intercept pointer input or participate in accessibility.
+
+This macOS-only primitive measures size, not complete visibility. It does not evaluate nested clipping, obscuring headers or window activity, and it does not choose scroll axes or indicator policy.
+
 ## Verification
 
 ```bash
