@@ -82,6 +82,23 @@ A nil item is a separator. Disabled items cannot receive keyboard selection. `Po
 
 The panel supports arrow keys, Return/Space activation, typeahead, Escape/Tab dismissal, outside-tap dismissal and scrolling to the highlighted row. Context-menu invocation gestures are host-owned; no AppKit or iPad context-interaction adapter is supplied.
 
+## Committed text fields
+
+`CommittedTextField` attempts a synchronous commit on submission, focus loss and removal. Return `true` to accept the draft or `false` to retain it with inline validation feedback. Unchanged drafts do not invoke the callback; rejected drafts can be retried on later commit triggers.
+
+```swift
+CommittedTextField("Name", value: name, identifier: "item-name") { draft in
+    let value = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !value.isEmpty else { return false }
+    name = value
+    return true
+}
+```
+
+The host owns the current `name`, validation and normalization. External values replace unfocused text or text equal to the previous external value, while focused dirty drafts remain intact. Acceptance records the raw draft as the local baseline; normalization does not guarantee an immediate canonical display when the external value stays unchanged.
+
+Escape handling remains application-owned. Asynchronous forms and editors requiring explicit Save/Cancel should retain their own drafts and ordinary `TextField` bindings instead of using this commit-on-removal control.
+
 ## Verification
 
 ```bash

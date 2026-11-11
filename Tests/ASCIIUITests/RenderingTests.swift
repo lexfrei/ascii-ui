@@ -72,24 +72,27 @@
             }
         }
 
-        private func render<Content: View>(_ content: Content, check: (NSView) throws -> Void) rethrows {
-            _ = NSApplication.shared
-            let host = NSHostingView(rootView: content)
-            let window = NSWindow(
-                contentRect: CGRect(x: 0, y: 0, width: 640, height: 460), styleMask: [.titled], backing: .buffered,
-                defer: false)
-            window.isReleasedWhenClosed = false
-            window.contentView = host
-            defer { window.close() }
-            host.layoutSubtreeIfNeeded()
-            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
-            host.layoutSubtreeIfNeeded()
-            try check(host)
-            XCTAssertFalse(window.isVisible)
-        }
-
         private func buttons(in view: NSView) -> [NSButton] {
             (view as? NSButton).map { [$0] } ?? view.subviews.flatMap { buttons(in: $0) }
         }
+    }
+
+    @MainActor
+    func render<Content: View>(_ content: Content, check: (NSView) throws -> Void) rethrows {
+        _ = NSApplication.shared
+        let host = NSHostingView(rootView: content)
+        let window = NSWindow(
+            contentRect: CGRect(x: 0, y: 0, width: 640, height: 460), styleMask: [.titled], backing: .buffered,
+            defer: false)
+        window.isReleasedWhenClosed = false
+        window.contentView = host
+        defer { window.close() }
+        for _ in 0..<3 {
+            host.layoutSubtreeIfNeeded()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+        host.layoutSubtreeIfNeeded()
+        try check(host)
+        XCTAssertFalse(window.isVisible)
     }
 #endif
