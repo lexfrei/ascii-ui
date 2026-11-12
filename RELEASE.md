@@ -1,17 +1,24 @@
-# Early release
+# Releases
 
-The first candidate is `v0.1.0-rc.1`. It is a prerelease for evaluating the shared API, not a stable 1.0 contract. Consumers should pin a reviewed revision or candidate tag.
+`v0.1.0` is the first non-prerelease in the pre-1.0 series. Consumers should pin a published release. It does not establish a permanent 1.0 API contract.
 
-## Checklist
+## Release procedure
 
-- [ ] Run strict Swift format, macOS package tests and iOS compilation on the candidate's CI commit.
-- [ ] Verify at least two real consumer applications against the candidate revision.
-- [ ] Record compiler versions and distinguish compile checks, hidden rendering and real input tests.
-- [ ] Verify the commit signature, create a signed candidate tag and verify its signature.
-- [ ] Review the release text before publishing a GitHub prerelease.
+1. Run strict Swift format, macOS package tests and iOS compilation on the release candidate.
+2. Validate real consumer applications against the same code. Keep application-specific editing, persistence and visibility policy outside the package.
+3. Record compiler versions and distinguish compilation, hidden rendering and native interaction checks. Do not infer VoiceOver coverage from accessibility labels alone.
+4. Verify the release commit, create a GPG-signed tag and verify its signature.
+5. Review the release notes and publish without replacing an existing tag. Consumers can then resolve the published version.
 
-## Candidate notes
+## Verification for 0.1.0
 
-This candidate provides literal bracketed controls, stable-width tabs, opaque popup surfaces, frozen-anchor placement and in-window menu navigation. Applications retain their own commands, availability checks, presentation state and focus-return policy.
+| Environment | Toolchain | Coverage |
+| --- | --- | --- |
+| Local Apple Silicon | Xcode 27.2, Swift 6.4.2 | Package tests, strict formatting and iOS 17 simulator source typechecking |
+| Hosted Intel macOS | Xcode 26.3, Swift 6.2.4 | Package tests, strict formatting and iOS 17 simulator source typechecking |
+| MIDI Router consumer | Xcode 27.2, Swift 6.4.2 | Package tests, Thread Sanitizer, universal application build and targeted native UI tests |
+| kokoko consumer | Xcode 27.2, Swift 6.4.2 | Core checks and macOS/iOS application builds without migrating its editors |
 
-The package requires Swift 6, macOS 14 or iOS 17. Tests cover menu state and hidden macOS rendering, including tab geometry and independence from the host font. iOS verification is compilation only. Real pointer and keyboard delivery, VoiceOver behavior and iPad context interactions remain unverified. Context-menu invocation adapters are not included.
+Native macOS checks exercised menu keyboard selection and Escape, suppression of the menu-container focus ring, and acceptance or rejection of committed text. Hidden-window tests separately cover field lifecycle, external-value reconciliation, viewport resizing, clipping, queued callbacks and observer cleanup.
+
+The package requires Swift 6, macOS 14 or iOS 17. The viewport-size reader is macOS-only. iOS runtime interaction, VoiceOver and iPad context gestures remain unverified. Context-menu invocation and focus-return policy remain application-owned.

@@ -80,7 +80,7 @@ A nil item is a separator. Disabled items cannot receive keyboard selection. `Po
 
 `PopupMetrics.platform` uses a 28-point minimum target and 13-point monospaced menu text on macOS, and a 44-point minimum target and 17-point monospaced menu text on iOS. Menu measurement and rendering use the same font. Set `textScale` on a copy of the platform metrics to scale menu typography and row geometry. The host can map its text-size preferences or Dynamic Type scale into this value. Buttons and tabs inherit the host's text size.
 
-The panel supports arrow keys, Return/Space activation, typeahead, Escape/Tab dismissal, outside-tap dismissal and scrolling to the highlighted row. Context-menu invocation gestures are host-owned; no AppKit or iPad context-interaction adapter is supplied.
+The panel supports arrow keys, Return/Space activation, typeahead, Escape/Tab dismissal, outside-tap dismissal and scrolling to the highlighted row. It retains keyboard focus and row highlighting without drawing a focus ring around the whole panel. Context-menu invocation gestures are host-owned; no AppKit or iPad context-interaction adapter is supplied.
 
 ## Committed text fields
 
@@ -120,4 +120,4 @@ swift test
 swift format lint --strict --recursive Sources Tests Package.swift
 ```
 
-Tests cover menu navigation, disabled rows and separators, typeahead, optional choices, placement and hidden-window macOS rendering. Rendering checks include stable tab widths and menu-font independence from the host. They do not prove real pointer/keyboard event delivery or VoiceOver behavior. iOS 17 simulator sources are compiler-checked; iOS runtime interaction and iPad context gestures have not been validated.
+Tests cover menu navigation, disabled rows and separators, typeahead, optional choices, committed drafts, viewport lifecycle and hidden-window macOS rendering. Rendering checks include stable tab widths and menu-font independence from the host. They do not prove real pointer/keyboard event delivery or VoiceOver behavior. Native consumer checks and compiler versions are recorded in [release verification](RELEASE.md). iOS runtime interaction and iPad context gestures have not been validated.
