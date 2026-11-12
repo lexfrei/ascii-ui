@@ -107,7 +107,7 @@ public struct PopupMenuPanel: View {
             .frame(width: frame.width, height: frame.height)
             .font(.system(size: metrics.fontSize, weight: .regular, design: .monospaced))
             .asciiPopupSurface()
-            .focusable().focused($focused)
+            .focusable().focusEffectDisabled().focused($focused)
             .onAppear { focused = true }
             .onKeyPress(.downArrow) {
                 move(1)

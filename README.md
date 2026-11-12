@@ -80,7 +80,38 @@ A nil item is a separator. Disabled items cannot receive keyboard selection. `Po
 
 `PopupMetrics.platform` uses a 28-point minimum target and 13-point monospaced menu text on macOS, and a 44-point minimum target and 17-point monospaced menu text on iOS. Menu measurement and rendering use the same font. Set `textScale` on a copy of the platform metrics to scale menu typography and row geometry. The host can map its text-size preferences or Dynamic Type scale into this value. Buttons and tabs inherit the host's text size.
 
-The panel supports arrow keys, Return/Space activation, typeahead, Escape/Tab dismissal, outside-tap dismissal and scrolling to the highlighted row. Context-menu invocation gestures are host-owned; no AppKit or iPad context-interaction adapter is supplied.
+The panel supports arrow keys, Return/Space activation, typeahead, Escape/Tab dismissal, outside-tap dismissal and scrolling to the highlighted row. It retains keyboard focus and row highlighting without drawing a focus ring around the whole panel. Context-menu invocation gestures are host-owned; no AppKit or iPad context-interaction adapter is supplied.
+
+## Committed text fields
+
+`CommittedTextField` attempts a synchronous commit on submission, focus loss and removal. Return `true` to accept the draft or `false` to retain it with inline validation feedback. Unchanged drafts do not invoke the callback; rejected drafts can be retried on later commit triggers.
+
+```swift
+CommittedTextField("Name", value: name, identifier: "item-name") { draft in
+    let value = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !value.isEmpty else { return false }
+    name = value
+    return true
+}
+```
+
+The host owns the current `name`, validation and normalization. External values replace unfocused text or text equal to the previous external value, while focused dirty drafts remain intact. Acceptance records the raw draft as the local baseline; normalization does not guarantee an immediate canonical display when the external value stays unchanged.
+
+Escape handling remains application-owned. Asynchronous forms and editors requiring explicit Save/Cancel should retain their own drafts and ordinary `TextField` bindings instead of using this commit-on-removal control.
+
+## Scroll viewport size on macOS
+
+Place `ScrollViewportReader` in the background of scroll content to receive the nearest enclosing scroll view's usable clip size. The host owns the `viewportSize` state:
+
+```swift
+content.background {
+    ScrollViewportReader { viewportSize = $0 }
+}
+```
+
+Reports arrive asynchronously on the main thread. Queued size changes are coalesced, scroll-origin changes do not produce reports, and detachment invalidates pending callbacks. The reader does not intercept pointer input or participate in accessibility.
+
+This macOS-only primitive measures size, not complete visibility. It does not evaluate nested clipping, obscuring headers or window activity, and it does not choose scroll axes or indicator policy.
 
 ## Verification
 
@@ -89,4 +120,4 @@ swift test
 swift format lint --strict --recursive Sources Tests Package.swift
 ```
 
-Tests cover menu navigation, disabled rows and separators, typeahead, optional choices, placement and hidden-window macOS rendering. Rendering checks include stable tab widths and menu-font independence from the host. They do not prove real pointer/keyboard event delivery or VoiceOver behavior. iOS 17 simulator sources are compiler-checked; iOS runtime interaction and iPad context gestures have not been validated.
+Tests cover menu navigation, disabled rows and separators, typeahead, optional choices, committed drafts, viewport lifecycle and hidden-window macOS rendering. Rendering checks include stable tab widths and menu-font independence from the host. They do not prove real pointer/keyboard event delivery or VoiceOver behavior. Native consumer checks and compiler versions are recorded in [release verification](RELEASE.md). iOS runtime interaction and iPad context gestures have not been validated.
